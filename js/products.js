@@ -1,5 +1,5 @@
 import { createApp } from 'https://cdnjs.cloudflare.com/ajax/libs/vue/3.0.9/vue.esm-browser.js';
-import pagination from './pagination.js';
+import pagination from './pagination.js'; //引入分頁的模組化元件
 
 //實體化
 let delProductModal = null;
@@ -59,18 +59,6 @@ const app = createApp ({
         delProductModal.show();
       }
     },
-    removeProduct() {
-      axios.delete(`${this.url}/api/${this.path}/admin/product/${this.tempProduct.id}`)
-      .then((res) => {
-        alert(res.data.message);
-        delProductModal.hide();
-        this.getProducts();
-      })
-      .catch((err) => {
-        alert(err.data.message);
-        console.log(err);
-      })
-    }
   },
   mounted() {
     // 取得 Token
@@ -87,13 +75,21 @@ const app = createApp ({
   }
 })
 
+//新增、編輯的全域註冊元件
 app.component('productModal', {
   props: ['tempProduct', 'isNew'],
   template: '#templateForProductModal',
+  data() {
+    return {
+      url: 'https://vue3-course-api.hexschool.io/v2',
+      path: 'bella_vue',
+    }
+  },
   methods: {
     updateProduct() {
       let url = `${this.url}/api/${this.path}/admin/product`;
       let method = 'post';
+      //判斷新增or編輯
       if(!this.isNew) {
         url = `${this.url}/api/${this.path}/admin/product/${this.tempProduct.id}`;
         method = 'put'
@@ -101,6 +97,7 @@ app.component('productModal', {
 
       axios[method](url, {data: this.tempProduct})
         .then(res => {
+          alert(res.data.message);
           this.$emit('get-products');
           productModal.hide();
         })
@@ -109,6 +106,32 @@ app.component('productModal', {
         })
     },
   },
+})
+
+//刪除的全域註冊元件
+app.component('removeProductModal',  {
+  props: ['tempProduct'],
+  template: '#templateForRemoveModal',
+  data() {
+    return {
+      url: 'https://vue3-course-api.hexschool.io/v2',
+      path: 'bella_vue',
+    }
+  },
+  methods: {
+    removeProduct() {
+      axios.delete(`${this.url}/api/${this.path}/admin/product/${this.tempProduct.id}`)
+      .then((res) => {
+        alert(res.data.message);
+        this.$emit('get-products');
+        delProductModal.hide();
+      })
+      .catch((err) => {
+        alert(err.data.message);
+        console.log(err);
+      })
+    }
+  }
 })
 
 app.mount("#app");
